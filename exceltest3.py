@@ -9,17 +9,19 @@ print(df.keys())
 
 for sheets in df:
     # print(df[sheets].head())
-    df[sheets] = df[sheets].dropna(subset=["Unnamed: 0"])
+    df[sheets] = df[sheets].dropna(subset=['Unnamed: 0'])
     df[sheets].columns = df[sheets].iloc[0]
     df[sheets] = df[sheets].drop(df[sheets].index[0])
-    df[sheets]["Datum:"] = pd.to_datetime(df[sheets]["Datum:"], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+    df[sheets]['Datum:'] = pd.to_datetime(df[sheets]['Datum:'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+    df[sheets].set_index('Datum:', inplace=True)
+    df[sheets].columns.name = None
 
 print("")
 print("")
 print("Und jetzt nur das 83002")
 print(df['83002'].head())
-print(df['83002']["Datum:"])
-print(df['38816']["Datum:"])
+# print(df['83002']["Datum:"])
+# print(df['38816']["Datum:"])
 print(df['38816'].loc["2017-01"])
 
 # df = fsk.parse("83002")
