@@ -1,5 +1,13 @@
 import pandas as pd
+import datetime
 import matplotlib.pyplot as plt
+from bokeh.charts import Bar, output_file, show
+
+d = "2016-W25"
+r = datetime.datetime.strptime(d + '-0', "%Y-W%W-%w")
+print(r)
+# df['71231'].loc[r]
+# https://stackoverflow.com/questions/17087314/get-date-from-week-number
 
 fsk = pd.ExcelFile("Fehlerkennkarte extern NEU.xls")
 print(fsk.sheet_names)
@@ -20,32 +28,48 @@ for sheets in df:
     df[sheets].columns = df[sheets].iloc[0]
     df[sheets] = df[sheets].drop(df[sheets].index[0])
     df[sheets]['Datum:'] = pd.to_datetime(df[sheets]['Datum:'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-    # df[sheets] = df[sheets].groupby('Datum:').sum()
-    # df[sheets] = df[sheets]['Datum:'].unique()
-    # df[sheets] = df[sheets].reset_index()
     df[sheets] = df[sheets].set_index('Datum:').groupby(pd.TimeGrouper('W')).sum()
     df[sheets].columns.name = None
 
     summe_io = df[sheets].columns[21]
     summe_nio = df[sheets].columns[19]
+
+    if sheets == '38947':
+        summe_io = df[sheets].columns[22]
+        summe_nio = df[sheets].columns[20]
+    if sheets == '71231':
+        summe_io = df[sheets].columns[20]
+        summe_nio = df[sheets].columns[18]
+
     spalten = [summe_io, summe_nio]
     print("Alle Sheets")
     print(sheets)
     print('------------------')
     # print(df[sheets][spalten].loc[datum])
     # print(df[sheets][spalten])
-    if df[sheets][summe_io].loc[datum1:datum2].sum() > 0:
-        print("Folgendes hat "+datum+" im Index:")
+    if r in df[sheets].index:
+        print("Folgendes hat "+str(r)+" im Index:")
+        print(sheets)
+        print(df[sheets][summe_io].loc[r].sum() > 0)
+        print(df[sheets][summe_io].loc[r].sum())
+        # print(df[sheets])
+        # if df[sheets][summe_io].loc[r].sum() > 0:
+        print("Und die Summe ist auch größer Null")
         print(sheets)
         print(df[sheets].index)
         print("")
-        print(df[sheets][spalten].loc[datum1:datum2])
+        print(df[sheets][spalten].loc[r])
         print("")
+        fig = df[sheets][spalten].loc[r].plot(kind='bar').get_figure()
+        fig.savefig(str(sheets)+"-"+d+".pdf")
+        p = Bar(df[sheets][spalten].loc[r], notebook=True)
+        output_file(str(sheets)+".html")
+        show(p)
 
 
+print("----ENDE----")
 
-
-    """
+"""
     if datum in df[sheets].index:
         print("Folgendes hat "+datum+" im Index:")
         print(sheets)
@@ -53,16 +77,16 @@ for sheets in df:
         print("")
         print(df[sheets].loc[datum1:datum2])
         print("")
-    """
+"""
 
-    """
+"""
     if not df[sheets].loc[datum1:datum2].empty:
         print("Folgendes hat "+datum+" im Index:")
         print(sheets)
         print(df[sheets][spalten].loc[datum])
         # fig = df[sheets][spalten].loc[datum].plot(kind='bar').get_figure()
         # fig.savefig(str(sheets)+".pdf")
-    """
+"""
 
 """
 print("")
