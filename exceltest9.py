@@ -14,6 +14,11 @@ kalenderwoche = 26
 d = str(jahr)+'-W'+str(kalenderwoche)
 r = datetime.datetime.strptime(d + '-0', "%Y-W%W-%w")
 print(r)
+
+startdatum = datetime.datetime(jahr, 1, 1, 0, 0)
+enddatum = datetime.datetime(jahr, 12, 31, 0, 0)
+print(startdatum)
+print(enddatum)
 # df['71231'].loc[r]
 # https://stackoverflow.com/questions/17087314/get-date-from-week-number
 
@@ -95,23 +100,47 @@ for sheets in df:
         print(df[sheets][spalten].loc[r])
         print("")
 
+        summe_io_jahr = df[sheets][summe_io].loc[startdatum:enddatum].mean()
+        summe_nio_jahr = df[sheets][summe_nio].loc[startdatum:enddatum].mean()
+        anteil_nio_jahr = summe_nio_jahr / (summe_io_jahr + summe_nio_jahr)
+        summe_io_kw = df[sheets][summe_io].loc[r].mean()
+        summe_nio_kw = df[sheets][summe_nio].loc[r].mean()
+        anteil_nio_kw = summe_nio_kw / (summe_io_kw + summe_nio_kw)
+        print(anteil_nio_jahr)
+
         ax = df[sheets][spalten].loc[r].plot(kind='bar', rot=90, color=colors)
         for p in ax.patches:
+            # print(p.get_height().type)
+            prozent = p.get_height()/(summe_io_kw + summe_nio_kw)
+            # prozent = 123
             ax.annotate(locale.format('%.0f', np.round(p.get_height(), decimals=0), True),
                         (p.get_x()+p.get_width()/2.,
                         p.get_height()),
                         ha='center',
                         va='center',
-                        xytext=(0, 10),
+                        xytext=(0, 15),
                         textcoords='offset points',
                         color='black',
                         fontsize='small',
                         weight='heavy')
+            ax.annotate(str('{:.1%}'.format(prozent)),
+                        (p.get_x()+p.get_width()/2.,
+                         p.get_height()),
+                        ha='center',
+                        va='center',
+                        xytext=(0, 6),
+                        textcoords='offset points',
+                        color='black',
+                        fontsize='x-small',
+                        weight='normal')
         print(ax.patches)
-        plt.title('Technomix: Sichtprüfung Axiallager t' + str(sheets) + ' in KW ' + str(kalenderwoche) + ' / ' + str(jahr))
+        plt.title('Technomix: Sichtprüfung t' + str(sheets) + ' in KW ' + str(kalenderwoche) + ' / ' + str(jahr))
         ax.yaxis.set_major_formatter(FuncFormatter(lambda y, _: locale.format('%.0f', y, True)))
         ax.yaxis.grid(True, linestyle='dotted', linewidth=0.3, color='black')
         plt.axvline(x=1.5, color='red')
+        # plt.text(5, 1000, 'Der Mittelwert ist ' + str(mittelwert))
+        ax.annotate('Anteil NIO in akt. KW:     ' + str('{:.1%}'.format(anteil_nio_kw)), xy=(1, 1),  xycoords='data', xytext=(0.6, -0.8), textcoords='axes fraction')
+        ax.annotate('Anteil NIO im Jahr ' + str(jahr) + ': ' + str('{:.1%}'.format(anteil_nio_jahr)), xy=(1, 1),  xycoords='data', xytext=(0.6, -0.9), textcoords='axes fraction')
         plt.tight_layout()
 
         fig = ax.get_figure()
@@ -121,83 +150,3 @@ for sheets in df:
 
 
 print("----ENDE----")
-
-"""
-    if datum in df[sheets].index:
-        print("Folgendes hat "+datum+" im Index:")
-        print(sheets)
-        print(df[sheets].index)
-        print("")
-        print(df[sheets].loc[datum1:datum2])
-        print("")
-"""
-
-"""
-    if not df[sheets].loc[datum1:datum2].empty:
-        print("Folgendes hat "+datum+" im Index:")
-        print(sheets)
-        print(df[sheets][spalten].loc[datum])
-        # fig = df[sheets][spalten].loc[datum].plot(kind='bar').get_figure()
-        # fig.savefig(str(sheets)+".pdf")
-"""
-
-"""
-print("")
-print("")
-print("Und jetzt nur das 83002")
-print(df['83002'].head())
-# print(df['83002']["Datum:"])
-# print(df['38816']["Datum:"])
-print(df['38816'].loc["2017-01"])
-"""
-
-# df = fsk.parse("83002")
-# print(df)
-
-"""
-df = df.dropna(subset=["Unnamed: 0"])
-# print(df)
-
-df.columns = df.iloc[0]
-df.drop(df.index[0])
-df["Datum:"] = pd.to_datetime(df["Datum:"], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-print("------------------------------------------------")
-print("Hier kommt die Spalte Datum")
-print("------------------------------------------------")
-print(df["Datum:"])
-
-df.set_index('Datum:', inplace=True)
-print("------------------------------------------------")
-print("Hier kommt neuer Index")
-print("------------------------------------------------")
-print(df.head())
-
-
-df = df.drop(df.index[0])
-print("------------------------------------------------")
-print("------Hier wurde die erste Zeile gelöscht-------")
-print("------------------------------------------------")
-print(df.head())
-
-print("------------------------------------------------")
-print("------Columns Name-------")
-print("------------------------------------------------")
-print(df.columns.name)
-
-df.columns.name = None
-# df.columns.name = df.index.name
-
-
-print(df.head())
-
-print(df.index.name)
-
-# df.index.name = None
-print(df.index.name)
-print(df.head())
-print(df.iloc[0])
-print(df.index[0])
-# df = df.drop(df.index[0])
-print(df.index.name)
-print("Hallo")
-"""
