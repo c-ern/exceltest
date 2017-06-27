@@ -7,7 +7,11 @@ from matplotlib.ticker import FuncFormatter
 
 locale.setlocale(locale.LC_ALL, 'German')
 
-d = "2017-W24"
+jahr = 2017
+kalenderwoche = 22
+
+# d = "2017-W24"
+d = str(jahr)+'-W'+str(kalenderwoche)
 r = datetime.datetime.strptime(d + '-0', "%Y-W%W-%w")
 print(r)
 # df['71231'].loc[r]
@@ -20,7 +24,48 @@ df = {sheet_name: fsk.parse(sheet_name) for sheet_name in fsk.sheet_names}
 
 print(df.keys())
 
-colors = ['green', 'red']
+summe_io = 'Summe i.O. [Stück]'
+# summe_nio = df[sheets].columns[19]
+summe_nio = 'Summe\nn.i.O.\n[Stück]'
+print("Summe NIO heißt:" + repr(summe_nio))
+f_besch_lagerpad = 'Beschädigungam Lagerpad'
+f_aufplatt_lagerpad = 'Aufplattierung Lagerpad'
+f_besch_aussenkontur = 'Beschädigung Außenkontur'
+f_besch_innenkontur = 'Beschädigung Innenkontur'
+f_besch_oelablauf = 'Beschädigung Ölablauf'
+f_besch_dichtflaeche = 'Beschädigung Dichtfläche'
+f_besch_querbohrung = 'Beschädigung Querbohrung'
+f_besch_oeltasche = 'Beschädigung Öltasche'
+f_oelige_teile = 'Ölige Teile'
+f_rueckstaende = 'Rückstände'
+f_sonstiges_1 = 'Sonstiges 1'
+f_sonstiges_2 = 'Sonstiges 2'
+f_sonstiges_3 = 'Sonstiges 3'
+f_sonstiges_4 = 'Sonstiges 4'
+f_sonstiges_5 = 'Sonstiges 5'
+
+spalten = [summe_io,
+           summe_nio,
+           f_besch_lagerpad,
+           f_aufplatt_lagerpad,
+           f_besch_aussenkontur,
+           f_besch_innenkontur,
+           f_besch_oelablauf,
+           f_besch_dichtflaeche,
+           f_besch_querbohrung,
+           f_besch_oeltasche,
+           f_oelige_teile,
+           f_rueckstaende,
+           f_sonstiges_1,
+           f_sonstiges_2,
+           f_sonstiges_3,
+           f_sonstiges_4,
+           f_sonstiges_5]
+
+farbe_io = 'green'
+farbe_nio = 'red'
+farbe_fehler = ['orange' for i in spalten]
+colors = [farbe_io, farbe_nio] + farbe_fehler
 
 for sheets in df:
     # print(df[sheets].head())
@@ -31,19 +76,6 @@ for sheets in df:
     df[sheets] = df[sheets].set_index('Datum:').groupby(pd.TimeGrouper('W')).sum()
     df[sheets].columns.name = None
 
-    summe_io = df[sheets].columns[21]
-    # summe_nio = df[sheets].columns[19]
-    summe_nio = 'Summe\nn.i.O.\n[Stück]'
-    print("Summe NIO heißt:" + repr(summe_nio))
-
-    if sheets == '38947':
-        summe_io = df[sheets].columns[22]
-        summe_nio = df[sheets].columns[20]
-    if sheets == '71231':
-        summe_io = df[sheets].columns[20]
-        summe_nio = df[sheets].columns[18]
-
-    spalten = [summe_io, summe_nio]
     print("Alle Sheets")
     print(sheets)
     print('------------------')
@@ -63,26 +95,28 @@ for sheets in df:
         print(df[sheets][spalten].loc[r])
         print("")
 
-        ax = df[sheets][spalten].loc[r].plot(kind='bar', rot=0, color=colors)
+        ax = df[sheets][spalten].loc[r].plot(kind='bar', rot=90, color=colors)
         for p in ax.patches:
             ax.annotate(locale.format('%.0f', np.round(p.get_height(), decimals=0), True),
                         (p.get_x()+p.get_width()/2.,
                         p.get_height()),
                         ha='center',
                         va='center',
-                        xytext=(0, -10),
+                        xytext=(0, 10),
                         textcoords='offset points',
-                        color='white',
-                        fontsize=20,
+                        color='black',
+                        fontsize='small',
                         weight='heavy')
         print(ax.patches)
-        plt.title(str(sheets) + ' in ' + str(d))
+        plt.title('Technomix: Sichtprüfung Axiallager t' + str(sheets) + ' in KW ' + str(kalenderwoche) + ' / ' + str(jahr))
         ax.yaxis.set_major_formatter(FuncFormatter(lambda y, _: locale.format('%.0f', y, True)))
-        plt.axvline(x=0.5, color='red')
+        ax.yaxis.grid(True, linestyle='dotted', linewidth=0.3, color='black')
+        plt.axvline(x=1.5, color='red')
         plt.tight_layout()
 
         fig = ax.get_figure()
-        fig.savefig(str(sheets)+"-"+d+".pdf")
+        # fig.savefig(str(sheets)+"--"+str(jahr)+'-KW' + str(kalenderwoche)+".pdf")
+        fig.savefig(str(jahr) + '-KW' + str(kalenderwoche) + '__t' + str(sheets) + '.pdf')
         plt.close()
 
 
