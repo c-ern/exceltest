@@ -10,6 +10,7 @@ locale.setlocale(locale.LC_ALL, 'German')
 jahr = 2016
 kalenderwoche = 28
 
+zusammen = pd.DataFrame()
 # d = "2017-W24"
 d = str(jahr)+'-W'+str(kalenderwoche)
 r = datetime.datetime.strptime(d + '-0', "%Y-W%W-%w")
@@ -67,6 +68,22 @@ spalten = [summe_io,
            f_sonstiges_4,
            f_sonstiges_5]
 
+summe_nio_ohne_oelig = [f_besch_lagerpad,
+                        f_aufplatt_lagerpad,
+                        f_besch_aussenkontur,
+                        f_besch_innenkontur,
+                        f_besch_oelablauf,
+                        f_besch_dichtflaeche,
+                        f_besch_querbohrung,
+                        f_besch_oeltasche,
+                        f_rueckstaende,
+                        f_sonstiges_1,
+                        f_sonstiges_2,
+                        f_sonstiges_3,
+                        f_sonstiges_4,
+                        f_sonstiges_5]
+
+
 farbe_io = 'green'
 farbe_nio = 'red'
 farbe_fehler = ['orange' for i in spalten]
@@ -75,6 +92,18 @@ colors = [farbe_io, farbe_nio] + farbe_fehler
 for sheets in df:
     # print(df[sheets].head())
     df[sheets] = df[sheets].dropna(subset=['Unnamed: 0'])
+    df[sheets].columns = df[sheets].iloc[0]
+    df[sheets] = df[sheets].drop(df[sheets].index[0])
+    df[sheets]['Datum:'] = pd.to_datetime(df[sheets]['Datum:'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
+    df[sheets]['Artikelnr'] = 't'+sheets
+    df[sheets]['NIO ohne ölig'] = df[sheets][summe_nio_ohne_oelig].sum(axis=1)
+    print("Alle Sheets")
+    print(sheets)
+
+    print(df[sheets].head())
+    print('------------------')
+    zusammen = zusammen.append(df[sheets], ignore_index=True)
+    '''
     df[sheets].columns = df[sheets].iloc[0]
     df[sheets] = df[sheets].drop(df[sheets].index[0])
     df[sheets]['Datum:'] = pd.to_datetime(df[sheets]['Datum:'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
@@ -148,5 +177,8 @@ for sheets in df:
         fig.savefig(str(jahr) + '-KW' + str(kalenderwoche) + '__t' + str(sheets) + '.pdf')
         plt.close()
 
-
+'''
+zusammen.rename(columns={summe_nio: 'Summe NIO'}, inplace=True)
+print(zusammen)
+zusammen.to_excel('FSK Technomix zusammen.xlsx')
 print("----ENDE----")
