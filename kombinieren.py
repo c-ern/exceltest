@@ -49,6 +49,9 @@ f_sonstiges_2 = 'Sonstiges 2'
 f_sonstiges_3 = 'Sonstiges 3'
 f_sonstiges_4 = 'Sonstiges 4'
 f_sonstiges_5 = 'Sonstiges 5'
+summe_gesamt = 'Gesamt-stückzahl:'
+fehlmenge = 'Fehl-menge:'
+mehrmenge = 'Mehr-menge'
 
 spalten = [summe_io,
            summe_nio,
@@ -96,11 +99,21 @@ for sheets in df:
     df[sheets] = df[sheets].drop(df[sheets].index[0])
     df[sheets]['Datum:'] = pd.to_datetime(df[sheets]['Datum:'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
     df[sheets]['Artikelnr'] = 't'+sheets
+    for einzelnes_datum in df[sheets]['Datum:']:
+        if einzelnes_datum == datetime.datetime(1945, 11, 5, 0, 0):
+            print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            print(df[sheets]['Datum:'])
+            print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+            print(einzelnes_datum)
+            print('!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
     df[sheets]['NIO ohne ölig'] = df[sheets][summe_nio_ohne_oelig].sum(axis=1)
-    print("Alle Sheets")
-    print(sheets)
+    df[sheets][fehlmenge].fillna(0, inplace=True)
+    df[sheets][mehrmenge].fillna(0, inplace=True)
+    df[sheets]['Summe Gesamt berechnet'] = df[sheets][summe_gesamt] - df[sheets][fehlmenge] + df[sheets][mehrmenge]
+    # print("Alle Sheets")
+    # print(sheets)
 
-    print(df[sheets].head())
+    # print(df[sheets].head())
     print('------------------')
     zusammen = zusammen.append(df[sheets], ignore_index=True)
     '''
@@ -178,7 +191,12 @@ for sheets in df:
         plt.close()
 
 '''
+# einzelnes_datum == datetime.datetime(1945, 11, 5, 0, 0)
+print(zusammen['Datum:'])
+# if zusammen['Datum:'] == datetime.datetime(1945, 11, 5, 0, 0):
+#    zusammen['Datum:'] = '2015-11-05 00:00:00'
+
 zusammen.rename(columns={summe_nio: 'Summe NIO'}, inplace=True)
-print(zusammen)
+print(zusammen.head())
 zusammen.to_excel('FSK Technomix zusammen.xlsx')
 print("----ENDE----")
